@@ -1,0 +1,48 @@
+import java.math.BigInteger;
+
+public class RootFormat {
+
+    // Convert the base-n number (as a string) into a BigInteger
+    public static BigInteger convertToDecimal(String base, String value) {
+        // Convert the string value from the given base to a BigInteger
+        int baseInt = Integer.parseInt(base); // Convert base to integer
+        return new BigInteger(value, baseInt); // Convert the value in base-n to a BigInteger
+    }
+
+    // Calculate the n-th root of a BigInteger
+    public static BigInteger nthRoot(BigInteger number, int n) {
+        BigInteger low = BigInteger.ZERO;
+        BigInteger high = number;
+        while (low.compareTo(high) < 0) {
+            BigInteger mid = low.add(high).divide(BigInteger.TWO);
+            BigInteger midPow = mid.pow(n);
+            
+            if (midPow.equals(number)) {
+                return mid; // Exact root found
+            } else if (midPow.compareTo(number) < 0) {
+                low = mid.add(BigInteger.ONE); // Try higher
+            } else {
+                high = mid; // Try lower
+            }
+        }
+        return low.subtract(BigInteger.ONE); // Return the approximate root
+    }
+
+    public static void main(String[] args) {
+        // Example input
+        String base = "2"; // Base-2 (binary)
+        String value = "111"; // Binary value (7 in decimal)
+
+        // Convert the binary number to decimal
+        BigInteger decimalValue = convertToDecimal(base, value);
+        System.out.println("Decimal value: " + decimalValue); // Output: 7
+
+        // Find the square root of the decimal number
+        BigInteger squareRoot = nthRoot(decimalValue, 2);
+        System.out.println("Square root: " + squareRoot);
+
+        // For any other root (e.g., cube root)
+        BigInteger cubeRoot = nthRoot(decimalValue, 3);
+        System.out.println("Cube root: " + cubeRoot);
+    }
+}
