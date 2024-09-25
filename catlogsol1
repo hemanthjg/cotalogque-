@@ -1,0 +1,103 @@
+import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.List;
+
+public class catlog {
+
+    // Function to convert values from different bases to base 10
+    public static int convertToBase10(String value, int base) {
+        return Integer.parseInt(value, base);
+    }
+
+    // Lagrange interpolation to find the constant term
+    public static double lagrangeInterpolation(List<int[]> points) {
+        int k = points.size();
+
+        double result = 0.0;
+
+        for (int i = 0; i < k; i++) {
+            int[] pointI = points.get(i);
+            int xi = pointI[0];
+            int yi = pointI[1];
+
+            double term = yi;
+
+            for (int j = 0; j < k; j++) {
+                if (i != j) {
+                    int xj = points.get(j)[0];
+                    term *= (0 - xj) / (double) (xi - xj);
+                }
+            }
+
+            result += term;
+        }
+
+        return result;
+    }
+
+    // Main function to process the input JSON and find the constant term
+    public static int findConstantTermFromJson(String jsonString) {
+        // Parse the JSON input
+        JSONObject data = new JSONObject();
+
+        int n = data.getJSONObject("keys").getInt("n");
+        int k = data.getJSONObject("keys").getInt("k");
+
+        List<int[]> points = new ArrayList<>();
+
+        // Extract and convert each share value to base 10
+        for (String key : data.keySet()) {
+            if (key.matches("\\d+")) {  // Check if key is a number
+                JSONObject point = data.getJSONObject(key);
+                int base = point.getInt("base");
+                String value = point.getString("value");
+
+                int x = Integer.parseInt(key);
+                int y = convertToBase10(value, base);
+                points.add(new int[]{x, y});
+            }
+        }
+
+        // We only need k points to reconstruct the polynomial
+        List<int[]> selectedPoints = points.subList(0, k);
+
+        // Reconstruct the polynomial and find the constant term
+        double constantTerm = lagrangeInterpolation(selectedPoints);
+
+        return (int) Math.round(constantTerm); // Rounding off the result
+    }
+
+    public static void main(String[] args) {
+        // Example JSON input as a string
+        String jsonString = "{\n" +
+                "    \"keys\": {\n" +
+                "        \"n\": 4,\n" +
+                "        \"k\": 3\n" +
+                "    },\n" +
+                "    \"1\": {\n" +
+                "        \"base\": \"10\",\n" +
+                "        \"value\": \"4\"\n" +
+                "    },\n" +
+                "    \"2\": {\n" +
+                "        \"base\": \"2\",\n" +
+                "        \"value\": \"111\"\n" +
+                "    },\n" +
+                "    \"3\": {\n" +
+                "        \"base\": \"10\",\n" +
+                "        \"value\": \"12\"\n" +
+                "    },\n" +
+                "    \"6\": {\n" +
+                "        \"base\": \"4\",\n" +
+                "        \"value\": \"213\"\n" +
+                "    }\n" +
+                "}";
+
+        // Call the function to find the constant term (c)
+        int constantTerm = findConstantTermFromJson(jsonString);
+
+        // Print the constant term (c)
+        System.out.println("The constant term (c) is: " + constantTerm);
+    }
+}
+
+
